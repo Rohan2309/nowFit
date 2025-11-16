@@ -1,0 +1,262 @@
+openapi: 3.0.0
+info:
+  title: NOWFit API Documentation
+  version: 1.0.0
+  description: >
+    Official API documentation for the NOWFit Fitness Coaching Platform.
+    Contains all Admin, Coach, Client, Auth, Chat, Diet & Workout APIs.
+
+servers:
+  - url: http://localhost:5000
+    description: Local Server
+
+tags:
+  - name: Auth
+  - name: Admin
+  - name: Coach
+  - name: Client
+  - name: Diets
+  - name: Workouts
+  - name: Chat
+
+paths:
+
+  #############################################
+  # AUTH ROUTES
+  #############################################
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string }
+                password: { type: string }
+      responses:
+        201:
+          description: User registered
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        200:
+          description: Login successful
+
+  /auth/logout:
+    get:
+      tags: [Auth]
+      summary: Logout user
+      responses:
+        200:
+          description: Logged out
+
+
+  #############################################
+  # ADMIN ROUTES
+  #############################################
+
+  /admin/dashboard:
+    get:
+      tags: [Admin]
+      summary: Admin dashboard
+      responses:
+        200:
+          description: Admin dashboard rendered
+
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: View all users
+      responses:
+        200:
+          description: List of users
+
+
+  #############################################
+  # COACH ROUTES
+  #############################################
+
+  /coach/dashboard:
+    get:
+      tags: [Coach]
+      summary: Coach dashboard
+      responses:
+        200:
+          description: Coach dashboard rendered
+
+  /coach/users:
+    get:
+      tags: [Coach]
+      summary: View assigned clients
+      responses:
+        200:
+          description: List of assigned clients
+
+
+  #############################################
+  # CLIENT ROUTES
+  #############################################
+
+  /client/dashboard:
+    get:
+      tags: [Client]
+      summary: Client dashboard
+      responses:
+        200:
+          description: Dashboard rendered
+
+  /client/profile:
+    get:
+      tags: [Client]
+      summary: View Profile
+      responses:
+        200:
+          description: Profile page rendered
+
+
+  #############################################
+  # DIET ROUTES
+  #############################################
+
+  /admin/diets:
+    get:
+      tags: [Diets]
+      summary: Get all diet plans
+      responses:
+        200:
+          description: Diet list
+
+  /admin/diets/create:
+    post:
+      tags: [Diets]
+      summary: Create a new diet plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                description: { type: string }
+      responses:
+        201:
+          description: Diet created
+
+
+  #############################################
+  # WORKOUT ROUTES
+  #############################################
+
+  /admin/workouts:
+    get:
+      tags: [Workouts]
+      summary: Get all workouts
+      responses:
+        200:
+          description: Workouts list
+
+  /admin/workouts/create:
+    post:
+      tags: [Workouts]
+      summary: Create new workout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                level: { type: string }
+                description: { type: string }
+      responses:
+        201:
+          description: Workout created
+
+
+  #############################################
+  # CHAT ROUTES
+  #############################################
+
+  /chat/{receiverId}:
+    get:
+      tags: [Chat]
+      summary: Open chat between 2 users
+      parameters:
+        - in: path
+          name: receiverId
+          required: true
+          schema: { type: string }
+          description: ID of user to chat with
+      responses:
+        200:
+          description: Chat page rendered
+
+  /chat/send:
+    post:
+      tags: [Chat]
+      summary: Send chat message (Socket.IO)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sender: { type: string }
+                receiver: { type: string }
+                message: { type: string }
+      responses:
+        200:
+          description: Message sent
+
+
+components:
+
+  schemas:
+    User:
+      type: object
+      properties:
+        _id: { type: string }
+        name: { type: string }
+        email: { type: string }
+        role: { type: string }
+        coachAssigned: { type: string }
+
+    Diet:
+      type: object
+      properties:
+        title: { type: string }
+        description: { type: string }
+
+    Workout:
+      type: object
+      properties:
+        title: { type: string }
+        level: { type: string }
+        description: { type: string }
+
+    ChatMessage:
+      type: object
+      properties:
+        from: { type: string }
+        to: { type: string }
+        message: { type: string }
+        timestamp: { type: string }

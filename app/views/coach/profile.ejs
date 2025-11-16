@@ -1,0 +1,202 @@
+<!doctype html>
+<html>
+<head>
+  <title>Coach Profile</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body { background:#f4f6f9; }
+
+    .profile-box {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 14px;
+      box-shadow: 0 5px 18px rgba(0,0,0,0.07);
+    }
+
+    .avatar {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid #ddd;
+    }
+
+    #toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      color: white;
+      z-index: 9999;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="toast"></div>
+
+<div class="container py-5">
+  <h2 class="mb-3">My Profile</h2>
+  <a href="/coach/dashboard" class="btn btn-outline-secondary mb-4">← Back to Dashboard</a>
+
+  <div class="profile-box">
+
+    <!-- ================= AVATAR DISPLAY ================= -->
+    <div class="text-center mb-4">
+      <img 
+        src="<%= coach.profileImage ? coach.profileImage : '/uploads/default-avatar.png' %>" 
+        alt="Avatar" 
+        class="avatar mb-3"
+      >
+      <h4 class="fw-bold mb-0"><%= coach.name %></h4>
+      <p class="text-muted"><%= coach.email %></p>
+    </div>
+
+    <hr>
+
+    <!-- ================= UPDATE PROFILE FORM ================= -->
+    <h5>Update Profile</h5>
+
+    <form id="profileForm" enctype="multipart/form-data" class="mt-3">
+      <div class="mb-3">
+        <label>Name</label>
+        <input name="name" value="<%= coach.name %>" class="form-control">
+      </div>
+
+      <div class="mb-3">
+        <label>Email</label>
+        <input name="email" value="<%= coach.email %>" class="form-control">
+      </div>
+
+      <div class="mb-3">
+        <label>Profile Image</label>
+        <input type="file" name="avatar" class="form-control">
+        <small class="text-muted">Upload new profile photo</small>
+      </div>
+
+      <button class="btn btn-primary w-100">Save Profile</button>
+    </form>
+
+    <hr>
+
+    <!-- ================= CHANGE PASSWORD FORM ================= -->
+    <h5>Change Password</h5>
+
+    <form id="passForm" class="mt-3">
+      <div class="mb-3">
+        <input name="oldPassword" type="password" placeholder="Old password" class="form-control" required>
+      </div>
+
+      <div class="mb-3">
+        <input name="newPassword" type="password" placeholder="New password" class="form-control" required>
+      </div>
+
+      <button class="btn btn-dark w-100">Change Password</button>
+    </form>
+
+    <hr>
+
+    <!-- ================= OTP SECTION ================= -->
+    <h5>Forgot / Reset via OTP</h5>
+
+    <button id="sendOtp" class="btn btn-warning w-100 mb-3">Send OTP</button>
+
+    <form id="otpForm">
+      <div class="mb-3">
+        <input name="otp" placeholder="Enter OTP" class="form-control">
+      </div>
+
+      <div class="mb-3">
+        <input name="newPassword" type="password" placeholder="New password" class="form-control">
+      </div>
+
+      <button class="btn btn-success w-100">Reset Password</button>
+    </form>
+
+  </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script>
+function toast(msg, ok = true) {
+  const t = $("#toast");
+  t.text(msg)
+   .css("background", ok ? "#10b981" : "#ef4444")
+   .fadeIn();
+
+  setTimeout(() => t.fadeOut(), 1500);
+}
+
+// ---------------- SAVE PROFILE ----------------
+$("#profileForm").submit(function(e){
+  e.preventDefault();
+  const fd = new FormData(this);
+
+  $.ajax({
+    url: '/coach/profile/update',
+    method: 'POST',
+    data: fd,
+    contentType: false,
+    processData: false,
+    success: (res) => {
+      toast(res.message, res.success);
+      if (res.success) setTimeout(() => location.reload(), 900);
+    }
+  });
+});
+
+// ---------------- CHANGE PASSWORD ----------------
+$("#passForm").submit(async function(e){
+  e.preventDefault();
+
+  const res = await fetch('/coach/profile/change-password', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      oldPassword: this.oldPassword.value,
+      newPassword: this.newPassword.value
+    })
+  });
+
+  const json = await res.json();
+  toast(json.message, json.success);
+});
+
+// ---------------- SEND OTP ----------------
+$("#sendOtp").click(async function(){
+  const res = await fetch('/coach/profile/send-otp', { method: 'POST' });
+  const json = await res.json();
+  toast(json.message, json.success);
+});
+
+// ---------------- VERIFY OTP ----------------
+$("#otpForm").submit(async function(e){
+  e.preventDefault();
+
+  const res = await fetch('/coach/profile/verify-otp', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      otp: this.otp.value,
+      newPassword: this.newPassword.value
+    })
+  });
+
+  const json = await res.json();
+  toast(json.message, json.success);
+});
+</script>
+
+</body>
+</html>

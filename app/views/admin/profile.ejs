@@ -1,0 +1,200 @@
+<!doctype html>
+<html>
+<head>
+  <title>Admin Profile</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body { background:#f3f6f9; }
+    .profile-card {
+      background:white;
+      padding:20px;
+      border-radius:16px;
+      box-shadow:0 5px 18px rgba(0,0,0,0.06);
+      max-width:600px;
+      margin:auto;
+      position:relative;
+    }
+    .avatar {
+      width:120px;
+      height:120px;
+      border-radius:50%;
+      object-fit:cover;
+      border:4px solid #0ea5a4;
+    }
+    /* Toast */
+    #toastMsg {
+      position:fixed;
+      top:20px;
+      right:20px;
+      z-index:9999;
+      padding:12px 20px;
+      border-radius:8px;
+      font-weight:600;
+      display:none;
+    }
+
+    /* Back Button */
+    .back-btn {
+      position:absolute;
+      top:20px;
+      left:20px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="toastMsg"></div>
+
+<div class="container py-5">
+
+  <div class="profile-card">
+
+    <!-- BACK TO DASHBOARD -->
+    <a href="/admin/dashboard" class="btn btn-outline-secondary back-btn">
+      ← Back
+    </a>
+
+    <h2 class="text-center mb-3">My Profile</h2>
+
+    <div class="text-center mb-4">
+      <% if (admin.profileImage) { %>
+        <img src="<%= admin.profileImage %>" class="avatar">
+      <% } else { %>
+        <img src="https://cdn-icons-png.flaticon.com/512/1144/1144760.png" class="avatar">
+      <% } %>
+    </div>
+
+    <!-- PROFILE FORM -->
+    <form id="profileForm" enctype="multipart/form-data">
+
+      <div class="mb-3">
+        <label class="form-label">Full Name</label>
+        <input class="form-control" name="name" value="<%= admin.name %>" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input class="form-control" name="email" value="<%= admin.email %>" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Profile Image</label>
+        <input type="file" name="avatar" class="form-control">
+      </div>
+
+      <button class="btn btn-primary w-100">Save Profile</button>
+    </form>
+
+    <hr>
+
+    <!-- CHANGE PASSWORD -->
+    <h4>Change Password</h4>
+
+    <form id="changePassForm">
+      <div class="mb-3">
+        <input class="form-control" name="oldPassword" placeholder="Old Password" required>
+      </div>
+      <div class="mb-3">
+        <input class="form-control" name="newPassword" placeholder="New Password" required>
+      </div>
+      <button class="btn btn-dark w-100">Change Password</button>
+    </form>
+
+    <hr>
+
+    <!-- OTP -->
+    <h4>Forgot Password (OTP Reset)</h4>
+
+    <button id="sendOTP" class="btn btn-warning w-100 mb-3">Send OTP</button>
+
+    <form id="otpForm">
+      <div class="mb-3">
+        <input class="form-control" name="otp" placeholder="Enter OTP">
+      </div>
+      <div class="mb-3">
+        <input class="form-control" name="newPassword" placeholder="New Password">
+      </div>
+      <button class="btn btn-success w-100">Reset Password</button>
+    </form>
+
+  </div>
+
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script>
+
+// Toast function
+function toast(msg, success=true){
+  const t = $("#toastMsg");
+  t.css("background", success ? "#10b981" : "#ef4444")
+   .css("color","white")
+   .text(msg)
+   .fadeIn(200);
+
+  setTimeout(()=> t.fadeOut(300), 1800);
+}
+
+// ---------------- PROFILE UPDATE ----------------
+$('#profileForm').submit(function(e){
+  e.preventDefault();
+  const formData = new FormData(this);
+
+  $.ajax({
+    url:'/admin/profile/update',
+    type:'POST',
+    data:formData,
+    contentType:false,
+    processData:false,
+    success:(json)=>{
+      toast(json.message || "Profile Updated!", json.success);
+      if(json.success) setTimeout(()=> location.reload(), 900);
+    }
+  });
+});
+
+// ---------------- CHANGE PASSWORD ----------------
+$('#changePassForm').submit(async function(e){
+  e.preventDefault();
+  const res = await fetch('/admin/profile/change-password',{
+    method:'POST',
+    headers:{'content-type':'application/json'},
+    body: JSON.stringify({
+      oldPassword:this.oldPassword.value,
+      newPassword:this.newPassword.value
+    })
+  });
+  const json = await res.json();
+  toast(json.message, json.success);
+});
+
+// ---------------- SEND OTP ----------------
+$('#sendOTP').click(async ()=>{
+  const res = await fetch('/admin/profile/send-otp',{ method:'POST' });
+  const json = await res.json();
+  toast(json.message, json.success);
+});
+
+// ---------------- VERIFY OTP ----------------
+$('#otpForm').submit(async function(e){
+  e.preventDefault();
+  const res = await fetch('/admin/profile/verify-otp',{
+    method:'POST',
+    headers:{'content-type':'application/json'},
+    body: JSON.stringify({
+      otp:this.otp.value,
+      newPassword:this.newPassword.value
+    })
+  });
+  const json = await res.json();
+  toast(json.message, json.success);
+});
+</script>
+
+</body>
+</html>

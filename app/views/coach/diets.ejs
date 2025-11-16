@@ -1,0 +1,384 @@
+<!doctype html>
+<html>
+<head>
+  <title>Coach Diets</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    body { background:#f4f6f9; }
+    #toastMsg {
+      position:fixed;
+      top:18px;
+      right:18px;
+      background:#10b981;
+      padding:10px 18px;
+      border-radius:6px;
+      color:white;
+      font-weight:600;
+      display:none;
+      z-index:99999;
+    }
+    .card-table { background:white; padding:22px; border-radius:12px; }
+  </style>
+</head>
+
+<body>
+
+<div id="toastMsg"></div>
+
+<div class="container py-5">
+
+  <h2 class="mb-2">My Diet Plans</h2>
+
+  <a href="/coach/dashboard" class="btn btn-outline-secondary mb-3">
+    ← Back to Dashboard
+  </a>
+
+  <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#createModal">
+    + Create Diet
+  </button>
+
+  <div class="card-table">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Assigned To</th>
+          <th width="200px">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% diets.forEach(d => { %>
+          <tr data-id="<%= d._id %>" data-meals="<%- JSON.stringify(d.meals) %>">
+            <td class="dtitle"><%= d.title %></td>
+
+            <td class="dassigned">
+              <%= d.assignedTo ? d.assignedTo.name : "Not assigned" %>
+            </td>
+
+            <td>
+              <button class="btn btn-sm btn-primary editBtn">
+                <i class="fa fa-pen"></i>
+              </button>
+
+              <% if (!d.assignedTo) { %>
+                <button class="btn btn-sm btn-info text-white assignBtn">
+                  <i class="fa fa-user-plus"></i>
+                </button>
+              <% } else { %>
+                <button class="btn btn-sm btn-warning unassignBtn">
+                  <i class="fa fa-user-minus"></i>
+                </button>
+              <% } %>
+
+              <button class="btn btn-sm btn-danger deleteBtn">
+                <i class="fa fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+
+    </table>
+  </div>
+
+</div>
+
+
+
+<!-- ==================== CREATE DIET MODAL ==================== -->
+<div class="modal fade" id="createModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+
+    <form id="createForm" class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Create Diet Plan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="mb-3">
+          <label>Title</label>
+          <input name="title" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+          <label>Description</label>
+          <textarea name="description" class="form-control" rows="3"></textarea>
+        </div>
+
+        <h6>Meals (one per line — CSV format)</h6>
+        <p class="small text-muted">Format: meal,calories,protein,carbs,fats</p>
+
+        <textarea id="mealInput" class="form-control" rows="4"
+          placeholder="Breakfast,350,25,40,12
+Lunch,600,40,60,20"></textarea>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-success">Create</button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+
+
+<!-- ==================== EDIT MODAL ==================== -->
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+
+    <form id="editForm" class="modal-content">
+
+      <input type="hidden" id="editId">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Diet Plan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="mb-3">
+          <label>Title</label>
+          <input id="editTitle" class="form-control">
+        </div>
+
+        <div class="mb-3">
+          <label>Description</label>
+          <textarea id="editDesc" class="form-control" rows="3"></textarea>
+        </div>
+
+        <h6>Meals</h6>
+        <textarea id="editMeals" class="form-control" rows="4"></textarea>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary">Save</button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+
+
+<!-- ==================== ASSIGN MODAL ==================== -->
+<div class="modal fade" id="assignModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+
+    <form id="assignForm" class="modal-content">
+
+      <input type="hidden" id="assignId">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Assign Diet</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <select id="userSelect" class="form-select"></select>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary">Assign</button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+function toast(msg, ok=true) {
+  $("#toastMsg")
+    .text(msg)
+    .css("background", ok ? "#10b981" : "#ef4444")
+    .fadeIn();
+  setTimeout(() => $("#toastMsg").fadeOut(), 1400);
+}
+
+$(function () {
+
+  // ---------------- CREATE DIET ----------------
+  $("#createForm").submit(async function(e){
+    e.preventDefault();
+
+    const meals = $("#mealInput").val()
+      .trim()
+      .split("\n")
+      .filter(Boolean)
+      .map(line => {
+        const p = line.split(",");
+        return {
+          meal: p[0],
+          calories: Number(p[1]),
+          protein: Number(p[2]),
+          carbs: Number(p[3]),
+          fats: Number(p[4])
+        };
+      });
+
+    const res = await fetch("/coach/diets", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        title: this.title.value,
+        description: this.description.value,
+        meals
+      })
+    });
+
+    const json = await res.json();
+    toast(json.success ? "Diet created" : "Failed", json.success);
+
+    if (json.success) setTimeout(() => location.reload(), 800);
+  });
+
+
+
+  // ---------------- OPEN EDIT MODAL ----------------
+  $(".editBtn").click(function(){
+    const tr = $(this).closest("tr");
+    const id = tr.data("id");
+    const meals = tr.data("meals");
+
+    $("#editId").val(id);
+    $("#editTitle").val(tr.find(".dtitle").text());
+    $("#editDesc").val("Enter description");
+
+    let formatted = meals
+      .map(m => `${m.meal},${m.calories},${m.protein},${m.carbs},${m.fats}`)
+      .join("\n");
+
+    $("#editMeals").val(formatted);
+
+    $("#editModal").modal("show");
+  });
+
+
+
+  // ---------------- SAVE EDIT ----------------
+  $("#editForm").submit(async function(e){
+    e.preventDefault();
+
+    const id = $("#editId").val();
+
+    const meals = $("#editMeals").val()
+      .trim()
+      .split("\n")
+      .filter(Boolean)
+      .map(line => {
+        const p = line.split(",");
+        return {
+          meal: p[0],
+          calories: Number(p[1]),
+          protein: Number(p[2]),
+          carbs: Number(p[3]),
+          fats: Number(p[4])
+        };
+      });
+
+    const res = await fetch("/coach/diets/" + id, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        title: $("#editTitle").val(),
+        description: $("#editDesc").val(),
+        meals
+      })
+    });
+
+    const json = await res.json();
+    toast(json.success ? "Updated" : "Error");
+
+    if (json.success) setTimeout(() => location.reload(), 800);
+  });
+
+
+
+  // ---------------- DELETE DIET ----------------
+  $(".deleteBtn").click(async function(){
+    if (!confirm("Delete diet?")) return;
+
+    const id = $(this).closest("tr").data("id");
+
+    await fetch("/coach/diets/" + id, { method: "DELETE" });
+
+    toast("Deleted");
+    setTimeout(() => location.reload(), 600);
+  });
+
+
+
+  // ---------------- ASSIGN DIET ----------------
+  $(".assignBtn").click(async function(){
+    const id = $(this).closest("tr").data("id");
+
+    $("#assignId").val(id);
+
+    const res = await fetch("/coach/diets/users-data");
+    const json = await res.json();
+
+    $("#userSelect").empty();
+    json.users.forEach(u => {
+      $("#userSelect").append(`<option value="${u._id}">${u.name} (${u.email})</option>`);
+    });
+
+    $("#assignModal").modal("show");
+  });
+
+  $("#assignForm").submit(async function(e){
+    e.preventDefault();
+
+    const id = $("#assignId").val();
+    const userId = $("#userSelect").val();
+
+    await fetch(`/coach/diets/${id}/assign`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ userId })
+    });
+
+    toast("Assigned");
+    setTimeout(() => location.reload(), 700);
+  });
+
+
+
+  // ---------------- UNASSIGN DIET ----------------
+  $(".unassignBtn").click(async function(){
+    if (!confirm("Unassign diet?")) return;
+
+    const id = $(this).closest("tr").data("id");
+
+    await fetch(`/coach/diets/${id}/unassign`, { method: "POST" });
+
+    toast("Unassigned");
+    setTimeout(() => location.reload(), 700);
+  });
+
+});
+</script>
+
+</body>
+</html>

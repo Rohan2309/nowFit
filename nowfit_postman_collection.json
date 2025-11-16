@@ -1,0 +1,234 @@
+{
+  "info": {
+    "name": "NowFit API Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/auth/login"
+          }
+        },
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/auth/register"
+          }
+        },
+        {
+          "name": "Send OTP",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/auth/send-otp"
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/auth/reset-password"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/admin/dashboard"
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/admin/users"
+          }
+        },
+        {
+          "name": "Edit User",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/admin/users/:id"
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/admin/users/:id"
+          }
+        },
+        {
+          "name": "Assign Coach",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/admin/users/:id/assign-coach"
+          }
+        },
+        {
+          "name": "Remove Coach",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/admin/users/:id/remove-coach"
+          }
+        },
+        {
+          "name": "Coaches List",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/admin/coaches"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Workouts",
+      "item": [
+        {
+          "name": "List Workouts",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/workouts"
+          }
+        },
+        {
+          "name": "Create Workout",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/workouts"
+          }
+        },
+        {
+          "name": "Update Workout",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/workouts/:id"
+          }
+        },
+        {
+          "name": "Delete Workout",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/workouts/:id"
+          }
+        },
+        {
+          "name": "Assign Workout",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/workouts/:id/assign"
+          }
+        },
+        {
+          "name": "Unassign Workout",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/workouts/:id/unassign"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Diets",
+      "item": [
+        {
+          "name": "List Diets",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/diets"
+          }
+        },
+        {
+          "name": "Create Diet",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/diets/create"
+          }
+        },
+        {
+          "name": "Update Diet",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/diets/:id/edit"
+          }
+        },
+        {
+          "name": "Delete Diet",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/diets/:id/delete"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Coach",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/coach/dashboard"
+          }
+        },
+        {
+          "name": "Assigned Users",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/coach/users"
+          }
+        },
+        {
+          "name": "Coach Workouts List",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/coach/workouts"
+          }
+        },
+        {
+          "name": "Coach Diets List",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/coach/diets"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Client",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/client/dashboard"
+          }
+        },
+        {
+          "name": "My Diet",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/client/diet"
+          }
+        },
+        {
+          "name": "My Workout",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/client/workout"
+          }
+        }
+      ]
+    }
+  ]
+}

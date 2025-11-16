@@ -1,0 +1,363 @@
+<!doctype html>
+<html>
+<head>
+  <title>Manage Workouts</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+  <style>
+    body { background:#f3f6f9; }
+    .table-card { background:white; padding:20px; border-radius:12px; }
+    #toastMsg {
+      position:fixed; top:20px; right:20px; z-index:99999;
+      background:#10b981; color:white; padding:12px 22px; border-radius:6px; display:none;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="toastMsg"></div>
+
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+
+    <h2 class="mb-0">Workouts</h2>
+
+    <div>
+      <a href="/admin/dashboard" class="btn btn-dark me-2">
+        ← Back to Dashboard
+      </a>
+
+      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createModal">
+        + Create Workout
+      </button>
+    </div>
+
+  </div>
+
+  <div class="table-card">
+    <table id="workoutTable" class="table display">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Level</th>
+          <th>Created By</th>
+          <th>Assigned To</th>
+          <th width="220px">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% workouts.forEach(w => { %>
+          <tr data-id="<%= w._id %>">
+
+            <td class="wtitle"><%= w.title %></td>
+            <td class="wlevel"><%= w.level %></td>
+
+            <td>
+              <%= w.createdBy ? w.createdBy.name : "Unknown" %>
+              <% if (w.createdBy && w.createdBy.role) { %>
+                <span class="badge bg-secondary"><%= w.createdBy.role %></span>
+              <% } %>
+            </td>
+
+            <td class="wassigned">
+              <%= w.assignedTo ? w.assignedTo.name : "Not assigned" %>
+            </td>
+
+            <td>
+              <button class="btn btn-sm btn-primary editBtn"><i class="fa fa-pen"></i></button>
+
+              <% if (!w.assignedTo) { %>
+                <button class="btn btn-sm btn-info assignBtn text-white">
+                  <i class="fa fa-user-plus"></i>
+                </button>
+              <% } else { %>
+                <button class="btn btn-sm btn-warning unassignBtn">
+                  <i class="fa fa-user-minus"></i>
+                </button>
+              <% } %>
+
+              <button class="btn btn-sm btn-danger deleteBtn"><i class="fa fa-trash"></i></button>
+            </td>
+
+          </tr>
+        <% }) %>
+      </tbody>
+
+    </table>
+  </div>
+
+</div>
+
+<!-- ================= CREATE MODAL ================= -->
+<div class="modal fade" id="createModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <form id="createForm" class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Create Workout</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="mb-3">
+          <label>Title</label>
+          <input name="title" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+          <label>Description</label>
+          <textarea name="description" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label>Level</label>
+          <select name="level" class="form-select">
+            <option>Beginner</option>
+            <option>Intermediate</option>
+            <option>Advanced</option>
+          </select>
+        </div>
+
+        <h6>Exercises</h6>
+        <p>Format: name,sets,reps,rest</p>
+
+        <textarea id="exerciseInput" class="form-control" rows="4"
+        placeholder="Bench Press,3,10,60s
+Squats,4,12,90s"></textarea>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-success">Create</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- ================= EDIT MODAL ================= -->
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <form id="editForm" class="modal-content">
+
+      <input type="hidden" id="editId">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Workout</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="mb-3">
+          <label>Title</label>
+          <input id="editTitle" name="title" class="form-control">
+        </div>
+
+        <div class="mb-3">
+          <label>Description</label>
+          <textarea id="editDesc" name="description" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label>Level</label>
+          <select id="editLevel" name="level" class="form-select">
+            <option>Beginner</option>
+            <option>Intermediate</option>
+            <option>Advanced</option>
+          </select>
+        </div>
+
+        <h6>Exercises</h6>
+        <textarea id="editExercises" class="form-control" rows="4"></textarea>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary">Save</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- ================= ASSIGN MODAL ================= -->
+<div class="modal fade" id="assignModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <form id="assignForm" class="modal-content">
+
+      <input type="hidden" id="assignId">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Assign to User</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <select id="userSelect" class="form-select"></select>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary">Assign</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+function toast(msg){
+  $("#toastMsg").text(msg).fadeIn();
+  setTimeout(()=> $("#toastMsg").fadeOut(), 1200);
+}
+
+$(function(){
+
+  const table = $("#workoutTable").DataTable();
+
+  // CREATE WORKOUT
+  $("#createForm").submit(async function(e){
+    e.preventDefault();
+
+    const exercises = $("#exerciseInput").val().split("\n").map(line => {
+      const p = line.split(",");
+      return { name:p[0], sets:p[1], reps:p[2], rest:p[3] };
+    });
+
+    const res = await fetch("/admin/workouts",{
+      method:"POST",
+      headers:{ "content-type":"application/json" },
+      body: JSON.stringify({
+        title: this.title.value,
+        description: this.description.value,
+        level: this.level.value,
+        exercises
+      })
+    });
+
+    const json = await res.json();
+    toast(json.success ? "Workout created" : "Error");
+
+    setTimeout(()=> location.reload(), 700);
+  });
+
+  // OPEN EDIT MODAL
+  $("#workoutTable").on("click", ".editBtn", function(){
+    const tr = $(this).closest("tr");
+    const id = tr.data("id");
+
+    $("#editId").val(id);
+    $("#editTitle").val(tr.find(".wtitle").text());
+    $("#editLevel").val(tr.find(".wlevel").text());
+    $("#editDesc").val("");
+
+    $("#editExercises").val("");
+
+    $("#editModal").modal("show");
+  });
+
+  // SAVE EDIT
+  $("#editForm").submit(async function(e){
+    e.preventDefault();
+
+    const id = $("#editId").val();
+
+    const exercises = $("#editExercises").val().split("\n").map(line => {
+      const p = line.split(",");
+      return { name:p[0], sets:p[1], reps:p[2], rest:p[3] };
+    });
+
+    const res = await fetch("/admin/workouts/" + id,{
+      method:"PUT",
+      headers:{ "content-type":"application/json" },
+      body: JSON.stringify({
+        title: $("#editTitle").val(),
+        description: $("#editDesc").val(),
+        level: $("#editLevel").val(),
+        exercises
+      })
+    });
+
+    const json = await res.json();
+    toast(json.success ? "Updated" : "Error");
+    setTimeout(()=> location.reload(), 700);
+  });
+
+  // DELETE WORKOUT
+  $("#workoutTable").on("click", ".deleteBtn", async function(){
+    if(!confirm("Delete workout?")) return;
+
+    const tr = $(this).closest("tr");
+    const id = tr.data("id");
+
+    await fetch("/admin/workouts/" + id, { method:"DELETE" });
+
+    toast("Deleted");
+    table.row(tr).remove().draw();
+  });
+
+  // ASSIGN WORKOUT
+  $("#workoutTable").on("click", ".assignBtn", async function(){
+    const tr = $(this).closest("tr");
+    const id = tr.data("id");
+    $("#assignId").val(id);
+
+    const res = await fetch("/admin/coaches-data");
+    const json = await res.json();
+
+    $("#userSelect").empty();
+    json.coaches.forEach(c => {
+      $("#userSelect").append(`<option value="${c._id}">${c.name}</option>`);
+    });
+
+    $("#assignModal").modal("show");
+  });
+
+  $("#assignForm").submit(async function(e){
+    e.preventDefault();
+
+    const id = $("#assignId").val();
+    const userId = $("#userSelect").val();
+
+    await fetch(`/admin/workouts/${id}/assign`,{
+      method:"POST",
+      headers:{ "content-type":"application/json" },
+      body: JSON.stringify({ userId })
+    });
+
+    toast("Assigned");
+    setTimeout(()=> location.reload(), 700);
+  });
+
+  // UNASSIGN
+  $("#workoutTable").on("click", ".unassignBtn", async function(){
+    const tr = $(this).closest("tr");
+    const id = tr.data("id");
+
+    await fetch(`/admin/workouts/${id}/unassign`,{ method:"POST" });
+    toast("Unassigned");
+    setTimeout(()=> location.reload(), 700);
+  });
+
+});
+</script>
+
+</body>
+</html>

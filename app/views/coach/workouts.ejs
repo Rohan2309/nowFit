@@ -1,0 +1,136 @@
+<!doctype html>
+<html>
+<head>
+  <title>Coach Workouts</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-5">
+  <h2>My Workouts</h2>
+  <a href="/coach/dashboard" class="btn btn-outline-secondary mb-3">← Back to Dashboard</a>
+
+  <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#createModal">+ Create Workout</button>
+
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead><tr><th>Title</th><th>Level</th><th>Assigned To</th><th>Actions</th></tr></thead>
+      <tbody>
+        <% workouts.forEach(w => { %>
+          <tr data-id="<%= w._id %>">
+            <td class="wtitle"><%= w.title %></td>
+            <td class="wlevel"><%= w.level %></td>
+            <td class="wassigned"><%= w.assignedTo ? w.assignedTo.name : 'Not assigned' %></td>
+            <td>
+              <button class="btn btn-sm btn-primary editBtn"><i class="fa fa-pen"></i></button>
+              <% if (!w.assignedTo) { %>
+                <button class="btn btn-sm btn-info assignBtn text-white"><i class="fa fa-user-plus"></i></button>
+              <% } else { %>
+                <button class="btn btn-sm btn-warning unassignBtn"><i class="fa fa-user-minus"></i></button>
+              <% } %>
+              <button class="btn btn-sm btn-danger deleteBtn"><i class="fa fa-trash"></i></button>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- create/edit/assign modals similar to admin's — we'll use simple forms here -->
+<!-- CREATE MODAL -->
+<div class="modal fade" id="createModal" tabindex="-1"><div class="modal-dialog modal-lg">
+<form id="createForm" class="modal-content">
+  <div class="modal-header"><h5>Create Workout</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body">
+    <div class="mb-3"><label>Title</label><input name="title" class="form-control" required></div>
+    <div class="mb-3"><label>Description</label><textarea name="description" class="form-control"></textarea></div>
+    <div class="mb-3"><label>Level</label><select name="level" class="form-select"><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></div>
+    <div class="mb-3"><label>Exercises (one per line, CSV: name,sets,reps,rest)</label><textarea id="exInput" class="form-control" rows="4"></textarea></div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-success">Create</button></div>
+</form></div></div>
+
+<!-- EDIT MODAL -->
+<div class="modal fade" id="editModal" tabindex="-1"><div class="modal-dialog modal-lg">
+<form id="editForm" class="modal-content">
+  <input type="hidden" id="editId">
+  <div class="modal-header"><h5>Edit Workout</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body">
+    <div class="mb-3"><label>Title</label><input id="editTitle" name="title" class="form-control"></div>
+    <div class="mb-3"><label>Description</label><textarea id="editDesc" name="description" class="form-control"></textarea></div>
+    <div class="mb-3"><label>Level</label><select id="editLevel" name="level" class="form-select"><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></div>
+    <div class="mb-3"><label>Exercises</label><textarea id="editExercises" class="form-control" rows="4"></textarea></div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary">Save</button></div>
+</form></div></div>
+
+<!-- ASSIGN MODAL -->
+<div class="modal fade" id="assignModal" tabindex="-1"><div class="modal-dialog modal-sm">
+<form id="assignForm" class="modal-content">
+  <input type="hidden" id="assignId">
+  <div class="modal-header"><h5>Assign to User</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body"><select id="userSelect" class="form-select"></select></div>
+  <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary">Assign</button></div>
+</form></div></div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function toast(msg){ const t = document.createElement('div'); t.innerText = msg; t.style = 'position:fixed;top:18px;right:18px;background:#10b981;color:white;padding:10px;border-radius:6px;z-index:99999'; document.body.appendChild(t); setTimeout(()=>t.remove(),1400); }
+
+$(function(){
+  // create
+  $('#createForm').submit(async function(e){
+    e.preventDefault();
+    const exLines = $('#exInput').val().trim().split('\n').filter(Boolean).map(l=>{
+      const p=l.split(','); return { name:p[0].trim(), sets:p[1]?.trim(), reps:p[2]?.trim(), rest:p[3]?.trim() };
+    });
+    const res = await fetch('/coach/workouts',{ method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ title:this.title.value, description:this.description.value, level:this.level.value, exercises: exLines })});
+    const json = await res.json();
+    toast(json.success ? 'Workout created' : 'Error');
+    if(json.success) setTimeout(()=>location.reload(),700);
+  });
+
+  // open edit
+  $('.editBtn').click(function(){
+    const tr = $(this).closest('tr'); const id = tr.data('id');
+    $('#editId').val(id); $('#editTitle').val(tr.find('.wtitle').text()); $('#editLevel').val(tr.find('.wlevel').text());
+    $('#editDesc').val(tr.find('.wdesc').text()||'');
+    $('#editExercises').val(''); // optionally fetch details via API if you have route
+    $('#editModal').modal('show');
+  });
+
+  // save edit
+  $('#editForm').submit(async function(e){
+    e.preventDefault(); const id = $('#editId').val();
+    const exLines = $('#editExercises').val().trim().split('\n').filter(Boolean).map(l=>{ const p=l.split(','); return { name:p[0].trim(), sets:p[1]?.trim(), reps:p[2]?.trim(), rest:p[3]?.trim() }; });
+    const res = await fetch('/coach/workouts/'+id,{ method:'PUT', headers:{'content-type':'application/json'}, body: JSON.stringify({ title:$('#editTitle').val(), description:$('#editDesc').val(), level:$('#editLevel').val(), exercises: exLines })});
+    const json = await res.json(); toast(json.success ? 'Updated' : 'Error'); if(json.success) setTimeout(()=>location.reload(),700);
+  });
+
+  // delete
+  $('.deleteBtn').click(async function(){ if(!confirm('Delete workout?')) return; const id = $(this).closest('tr').data('id'); await fetch('/coach/workouts/'+id,{ method:'DELETE' }); toast('Deleted'); setTimeout(()=>location.reload(),500); });
+
+  // assign open
+  $('.assignBtn').click(async function(){ const id = $(this).closest('tr').data('id'); $('#assignId').val(id);
+    const res = await fetch('/coach/workouts/users-data'); const json = await res.json();
+    $('#userSelect').empty(); json.users.forEach(u=>$('#userSelect').append(`<option value="${u._id}">${u.name} (${u.email})</option>`));
+    $('#assignModal').modal('show');
+  });
+
+  // assign submit
+  $('#assignForm').submit(async function(e){ e.preventDefault(); const id = $('#assignId').val(); const userId = $('#userSelect').val();
+    await fetch('/coach/workouts/'+id+'/assign',{ method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ userId })});
+    toast('Assigned'); setTimeout(()=>location.reload(),700);
+  });
+
+  // unassign
+  $('.unassignBtn').click(async function(){ if(!confirm('Unassign?')) return; const id = $(this).closest('tr').data('id'); await fetch('/coach/workouts/'+id+'/unassign',{ method:'POST' }); toast('Unassigned'); setTimeout(()=>location.reload(),700); });
+
+});
+</script>
+</body>
+</html>

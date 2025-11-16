@@ -1,0 +1,147 @@
+<!doctype html>
+<html>
+<head>
+  <title>Assigned Clients</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    body { background:#eef3f8; font-family: Inter, 'Segoe UI', Arial; }
+
+    .card-box {
+      background: white;
+      padding: 25px;
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.07);
+    }
+
+    th {
+      background:#f8fafc;
+      font-weight:600;
+      color:#374151;
+    }
+
+    .rounded-img {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #fff;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+      margin-right: 10px;
+    }
+
+    .badge-diet {
+      background:#0ea5a4;
+      border-radius: 10px;
+    }
+
+    .badge-workout {
+      background:#3b82f6;
+      border-radius: 10px;
+    }
+
+    .badge-unassigned {
+      background:#9ca3af;
+      border-radius: 10px;
+    }
+
+    .client-row:hover {
+      background:#f9fafb;
+      transition: .2s;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container py-5">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold">My Assigned Clients</h1>
+
+    <a href="/coach/dashboard" class="btn btn-outline-secondary px-4">
+      ← Back to Dashboard
+    </a>
+  </div>
+
+  <div class="card-box">
+
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>Email</th>
+          <th>Diet</th>
+          <th>Workout</th>
+          <th style="width:200px;">Progress</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% users.forEach(u => { %>
+
+        <tr class="client-row">
+
+          <!-- Profile Image + Name -->
+          <td class="d-flex align-items-center">
+
+            <%
+              const avatar =
+                (u.profileImage && u.profileImage.trim() !== "")
+                  ? u.profileImage
+                  : (u.avatar && u.avatar.trim() !== "")
+                      ? u.avatar
+                      : "https://cdn-icons-png.flaticon.com/512/847/847969.png";
+            %>
+
+            <img src="<%= avatar %>" class="rounded-img">
+            <span><%= u.name %></span>
+          </td>
+
+          <!-- Email -->
+          <td><%= u.email %></td>
+
+          <!-- Diet -->
+          <td>
+            <% if (u.assignedDiet) { %>
+              <span class="badge badge-diet text-white px-3 py-2">
+                <i class="fa fa-apple-alt"></i> <%= u.assignedDiet.title %>
+              </span>
+            <% } else { %>
+              <span class="badge badge-unassigned text-white px-3 py-2">Unassigned</span>
+            <% } %>
+          </td>
+
+          <!-- Workout -->
+          <td>
+            <% if (u.assignedWorkout) { %>
+              <span class="badge badge-workout text-white px-3 py-2">
+                <i class="fa fa-dumbbell"></i> <%= u.assignedWorkout.title %>
+              </span>
+            <% } else { %>
+              <span class="badge badge-unassigned text-white px-3 py-2">Unassigned</span>
+            <% } %>
+          </td>
+
+          <!-- Progress -->
+          <td>
+            <div class="progress" style="height: 12px; border-radius:10px;">
+              <div class="progress-bar bg-success" style="width:<%= u.progress || 0 %>%"></div>
+            </div>
+          </td>
+
+        </tr>
+
+        <% }) %>
+      </tbody>
+    </table>
+
+  </div>
+
+</div>
+
+</body>
+</html>

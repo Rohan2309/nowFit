@@ -1,0 +1,1 @@
+Static assets folder. Put CSS/JS/images here.

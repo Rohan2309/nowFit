@@ -1,0 +1,255 @@
+<!doctype html>
+<html>
+<head>
+  <title>Client Dashboard</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background: #f4f6f9;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto;
+    }
+
+    .card-plain {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+    }
+
+    .avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #fff;
+      box-shadow: 0 6px 18px rgba(2,6,23,0.06);
+    }
+
+    .progress-track {
+      height: 14px;
+      border-radius: 10px;
+      background: #e6eef0;
+    }
+
+    .progress-track > div {
+      height: 14px;
+      border-radius: 10px;
+      background: #10b981;
+    }
+
+    .small-muted { color:#6b7280; }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-light bg-white shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold">NOWFit</a>
+
+    <div>
+      <a href="/auth/logout" class="btn btn-outline-secondary">Logout</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-5">
+
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="fw-bold">Hi, <%= user.name %></h1>
+      <p class="small text-muted">Overview of your assigned program and coach</p>
+    </div>
+    <div>
+      <a href="/client/profile" class="btn btn-dark">My Profile</a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- ==============================
+         DIET
+    =============================== -->
+    <div class="col-md-4">
+      <div class="card-plain">
+        <h5>My Diet</h5>
+
+        <% if (diet) { %>
+          <p class="mb-1"><strong><%= diet.title %></strong></p>
+          
+          <a href="/client/diet" class="btn btn-sm btn-success mt-2">View Diet</a>
+
+        <% } else { %>
+          <p class="text-muted">No diet assigned.</p>
+        <% } %>
+
+      </div>
+    </div>
+
+    <!-- ==============================
+         WORKOUT
+    =============================== -->
+    <div class="col-md-4">
+      <div class="card-plain">
+        <h5>My Workout</h5>
+
+        <% if (workout) { %>
+          <p class="mb-1"><strong><%= workout.title %></strong></p>
+          <p class="small-muted">Level: <%= workout.level %></p>
+          <a href="/client/workout" class="btn btn-sm btn-primary mt-2">View Workout</a>
+
+        <% } else { %>
+          <p class="text-muted">No workout assigned.</p>
+        <% } %>
+
+      </div>
+    </div>
+
+    <!-- ==============================
+         COACH
+    =============================== -->
+    <div class="col-md-4">
+      <div class="card-plain d-flex align-items-center">
+
+        <div class="me-3">
+          <% 
+            const coachImg =
+              user.coachAssigned && user.coachAssigned.profileImage
+              ? user.coachAssigned.profileImage
+              : 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+          %>
+
+          <img src="<%= coachImg %>" class="avatar">
+        </div>
+
+        <div style="flex:1">
+          <h6 class="mb-0"><%= user.coachAssigned ? user.coachAssigned.name : 'No Coach' %></h6>
+
+          <p class="small text-muted mb-0">
+            <%= user.coachAssigned ? user.coachAssigned.email : '' %>
+          </p>
+
+          <% if (user.coachAssigned) { %>
+            <a href="mailto:<%= user.coachAssigned.email %>" class="btn btn-sm btn-outline-primary mt-2">
+              Contact Coach
+            </a>
+          <% } %>
+
+        </div>
+      </div>
+    </div>
+    <!-- ==============================
+         CHAT WITH COACH
+    =============================== -->
+ <div class="col-md-3">
+  <div class="card-plain text-center">
+
+    <h5>Chat</h5>
+
+    <% if (user.coachAssigned) { %>
+      <i class="fa fa-comments fa-2x text-primary mb-2"></i>
+      <p class="small-muted">Chat with your coach in real-time.</p>
+
+      <a href="/chat/client" class="btn btn-sm btn-dark mt-2">
+        Open Chat
+      </a>
+
+    <% } else { %>
+      <p class="text-muted">No coach assigned.</p>
+    <% } %>
+
+  </div>
+</div>
+
+
+    <!-- ==============================
+         PROGRESS
+    =============================== -->
+    <div class="col-12">
+      <div class="card-plain">
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <h5 class="mb-0">My Progress</h5>
+            <p class="small text-muted">
+              Move the slider to update progress — your coach will see it live.
+            </p>
+          </div>
+          <div class="text-end">
+            <span id="progressPercent" class="fw-bold"><%= user.progress %>%</span>
+          </div>
+        </div>
+
+        <div class="row align-items-center">
+
+          <div class="col-md-9">
+            <input id="progressSlider" type="range" min="0" max="100"
+              value="<%= user.progress %>" class="form-range">
+
+            <div class="progress-track mt-2">
+              <div id="progressFill" style="width:<%= user.progress %>%"></div>
+            </div>
+          </div>
+
+          <div class="col-md-3 text-end">
+            <button id="saveProgress" class="btn btn-primary">Save Progress</button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ==============================
+     SCRIPTS
+============================== -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script>
+$(function() {
+
+  // Update % display while sliding
+  $('#progressSlider').on('input', function() {
+    const val = $(this).val();
+    $('#progressPercent').text(val + '%');
+    $('#progressFill').css('width', val + '%');
+  });
+
+  // Save progress
+  $('#saveProgress').click(async function() {
+    const value = $('#progressSlider').val();
+
+    const res = await fetch('/client/update-progress', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ progress: value })
+    });
+
+    const json = await res.json();
+
+    if (json.success) {
+      $('#saveProgress').text('Saved!').prop('disabled', true);
+
+      setTimeout(() => {
+        $('#saveProgress').text('Save Progress').prop('disabled', false);
+      }, 900);
+
+    } else {
+      alert(json.message || 'Failed to save progress');
+    }
+  });
+
+});
+</script>
+
+</body>
+</html>

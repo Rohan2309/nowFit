@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NOWFit - Register</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #0ea5a4, #06b6d4);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Inter, Arial;
+      color: white;
+    }
+
+    .register-card {
+      width: 420px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(12px);
+      border-radius: 18px;
+      padding: 35px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+      text-align: center;
+    }
+
+    .brand-title {
+      font-size: 40px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+      color: #ffffff;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    h2 {
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-weight: 500;
+      color: #f8fafc;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .form-control, .form-select {
+      border-radius: 12px;
+      padding: 10px 14px;
+    }
+
+    .btn-register {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      background: #0f172a;
+      color: white;
+      font-weight: 600;
+      transition: 0.2s;
+      margin-top: 5px;
+    }
+
+    .btn-register:hover {
+      background: #1e293b;
+    }
+
+    .alert {
+      border-radius: 12px;
+    }
+
+    .link-login {
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    .link-login a {
+      color: #fff;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="register-card">
+
+    <!-- NOWFit Text Logo -->
+    <div class="brand-title">NOWFit</div>
+
+    <h2>Create Account</h2>
+
+    <% if (typeof error !== 'undefined') { %>
+      <div class="alert alert-danger"><%= error %></div>
+    <% } %>
+
+    <form method="post" action="/auth/register">
+
+      <div class="mb-3 text-start">
+        <label>Name</label>
+        <input required name="name" class="form-control">
+      </div>
+
+      <div class="mb-3 text-start">
+        <label>Email</label>
+        <input required type="email" name="email" class="form-control">
+      </div>
+
+      <div class="mb-3 text-start">
+        <label>Password</label>
+        <input required type="password" name="password" class="form-control">
+      </div>
+
+      <div class="mb-3 text-start">
+        <label>Role</label>
+        <select name="role" class="form-select">
+          <option value="user">User</option>
+          <option value="coach">Coach</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+
+      <button class="btn-register">Register</button>
+    </form>
+
+    <div class="link-login">
+      Already have an account? <a href="/auth/login">Login</a>
+    </div>
+
+  </div>
+
+</body>
+</html>
