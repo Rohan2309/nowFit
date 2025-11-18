@@ -69,39 +69,41 @@ class AuthController {
   // REGISTER
   // -----------------------------
   static async register(req, res) {
-    try {
-      const { name, email, password } = req.body;
+  try {
+    const { name, email, password, role } = req.body;
 
-      logger.info("Registration attempt", { email });
+    logger.info("Registration attempt", { email });
 
-      if (!name || !email || !password) {
-        logger.warn("Registration failed: Missing fields");
-        return res.render("auth/register", { error: "All fields required" });
-      }
-
-      const exists = await User.findOne({ email });
-      if (exists) {
-        logger.warn("Registration failed: Email already exists", { email });
-        return res.render("auth/register", { error: "Email already registered" });
-      }
-
-      await User.create({
-        name,
-        email,
-        password,
-        role: "user",
-        isVerified: true
-      });
-
-      logger.info("User registered successfully", { email });
-
-      return res.render("auth/login", { success: "Account created!" });
-
-    } catch (err) {
-      logger.error("Registration Error", { error: err.message });
-      return res.render("auth/register", { error: "Server error" });
+    if (!name || !email || !password) {
+      logger.warn("Registration failed: Missing fields");
+      return res.render("auth/register", { error: "All fields required" });
     }
+
+    const exists = await User.findOne({ email });
+    if (exists) {
+      logger.warn("Registration failed: Email already exists", { email });
+      return res.render("auth/register", { error: "Email already registered" });
+    }
+
+    await User.create({
+      name,
+      email,
+      password,
+      role: role || "user",   // <-- NOW ROLE IS TAKEN FROM THE FORM
+      isVerified: true
+    });
+
+    logger.info("User registered successfully", { email });
+
+    return res.render("auth/login", { success: "Account created!" });
+
+  } catch (err) {
+    logger.error("Registration Error", { error: err.message });
+    return res.render("auth/register", { error: "Server error" });
   }
+}
+
+
 
   // -----------------------------
   // SEND OTP
