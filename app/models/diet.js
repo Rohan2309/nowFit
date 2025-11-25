@@ -4,6 +4,12 @@ const dietSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String },
 
+  // NEW FIELD — Foods list (comma separated in form, array in DB)
+  foods: {
+    type: [String],
+    default: []
+  },
+
   meals: [
     {
       meal: String,
@@ -14,7 +20,7 @@ const dietSchema = new mongoose.Schema({
     }
   ],
 
-  // Total calorie calculation (auto)
+  // Manual calorie input (can be auto-calculated later)
   calories: { type: Number, required: true },
 
   createdBy: {

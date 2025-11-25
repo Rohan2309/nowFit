@@ -64,7 +64,7 @@ class DietController {
       await Diet.create({
         title,
         description,
-        foods: foods.split(",").map(f => f.trim()),
+        foods: foods ? foods.split(",").map(f => f.trim()) : [],
         calories,
         createdBy: req.user._id
       });
@@ -85,6 +85,9 @@ class DietController {
   static async editPage(req, res) {
     try {
       const diet = await Diet.findById(req.params.id).lean();
+
+      // Prevent undefined foods array
+      diet.foods = Array.isArray(diet.foods) ? diet.foods : [];
 
       res.render("admin/diets/edit", {
         admin: req.user,
@@ -109,7 +112,7 @@ class DietController {
       await Diet.findByIdAndUpdate(req.params.id, {
         title,
         description,
-        foods: foods.split(",").map(f => f.trim()),
+        foods: foods ? foods.split(",").map(f => f.trim()) : [],
         calories
       });
 
